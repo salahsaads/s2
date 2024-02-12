@@ -1,7 +1,12 @@
 // ignore_for_file: sort_child_properties_last
 
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:s2/adit.dart';
 import 'package:s2/model.dart';
 import 'package:s2/modle2.dart';
 
@@ -13,183 +18,74 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  bool isloding = true;
+  List<QueryDocumentSnapshot> data = [];
+  getprodect() async {
+    QuerySnapshot prodectdata =
+        await FirebaseFirestore.instance.collection('prodect').limit(5).get();
+    data.addAll(prodectdata.docs);
+    isloding = false;
+    setState(() {});
+  }  
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getprodect();
+  }
+
   bool? isChecked = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: ListView(children: [
-        Container(
-          child: const Padding(
-            padding: EdgeInsets.only(left: 32, right: 32, top: 50),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(
-                  Icons.menu_sharp,
-                  color: Colors.white,
-                  size: 28,
-                ),
-                Icon(
-                  Icons.search,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ],
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+      ),
+      backgroundColor: const Color.fromARGB(255, 240, 236, 236),
+      body: GridView.builder(
+        itemCount: data.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, mainAxisSpacing: 1),
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: InkWell(
+              onLongPress: () {
+                AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.warning,
+                    animType: AnimType.leftSlide,
+                    title: 'Waring',
+                    btnCancelText: 'تعديل',
+                    btnOkText: 'حذف',
+                    btnCancelOnPress: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => Adit(
+                                oldname: data[index]['name'],
+                                olddiscount: data[index]['discount'],
+                                oldprice: data[index]['price'],
+                                id: data[index].id,
+                              )));
+                    },
+                    desc: ' هل تريد الحذف ام  التعديل',
+                    btnOkOnPress: () async {
+                      await FirebaseFirestore.instance
+                          .collection('prodect')
+                          .doc(data[index].id)
+                          .delete();
+                      Navigator.of(context).pushReplacementNamed('home');
+                    }).show();
+              },
+              child: Categories(
+                discount: data[index]['discount'],
+                name: data[index]['name'],
+                price: data[index]['price'],
+              ),
             ),
-          ),
-          width: double.infinity,
-          height: 111,
-          decoration: const BoxDecoration(color: Colors.black),
-        ),
-        Container(
-          child: SingleChildScrollView(
-            child: Column(
-              //mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-
-              children: [
-                const SizedBox(
-                  height: 15,
-                ),
-                Text(
-                  'World of Luxury',
-                  style: GoogleFonts.libreBaskerville(
-                      fontSize: 20, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                Text(
-                  'Find the best watch for your wrist',
-                  style: TextStyle(
-                      color: colors.p3,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 32, top: 36),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Categories',
-                            style: GoogleFonts.libreBaskerville(
-                                fontWeight: FontWeight.w700, fontSize: 20),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'See All',
-                                  style: GoogleFonts.libreBaskerville(
-                                      color: colors.p1,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 10),
-                                ),
-                                Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 15,
-                                  color: colors.p1,
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        children: [
-                          GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(context, 'prodcut');
-                              },
-                              child: const Categories()),
-                          const SizedBox(
-                            width: 20,
-                          ),
-                          const Categories(),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 32, top: 36),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Top Deals',
-                            style: GoogleFonts.libreBaskerville(
-                                fontWeight: FontWeight.w700, fontSize: 20),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'See All',
-                                  style: GoogleFonts.libreBaskerville(
-                                      color: colors.p1,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 10),
-                                ),
-                                Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 15,
-                                  color: colors.p1,
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Row(
-                        children: [
-                          Categories(),
-                          SizedBox(
-                            width: 20,
-                          ),
-                          Categories(),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 32,
-                      ),
-                      const Row(
-                        children: [
-                          Categories(),
-                          SizedBox(
-                            width: 20,
-                          ),
-                          Categories(),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          width: double.infinity,
-          height: 756,
-          decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(25), topRight: Radius.circular(25))),
-        )
-      ]),
+          );
+        },
+      ),
     );
   }
 }

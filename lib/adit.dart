@@ -6,16 +6,26 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:s2/home.dart';
 import 'package:s2/model.dart';
 
-class Shopping extends StatefulWidget {
-  const Shopping({super.key});
+class Adit extends StatefulWidget {
+  final String id;
+  final oldname;
+  final oldprice;
+  final olddiscount;
+  const Adit(
+      {super.key,
+      required this.id,
+      this.oldname,
+      this.oldprice,
+      this.olddiscount});
 
   @override
-  State<Shopping> createState() => _ShoppingState();
+  State<Adit> createState() => _ShoppingState();
 }
 
-class _ShoppingState extends State<Shopping> {
+class _ShoppingState extends State<Adit> {
   TextEditingController name = TextEditingController();
   TextEditingController price = TextEditingController();
   TextEditingController discount = TextEditingController();
@@ -31,16 +41,26 @@ class _ShoppingState extends State<Shopping> {
   CollectionReference prodect =
       FirebaseFirestore.instance.collection('prodect');
 
-  Future<void> addprodect() {
+  Future<void> Aditprodect() {
     // Call the user's CollectionReference to add a new user
-    return prodect.add({
-      'name': name.text,
+    return prodect.doc(widget.id).update({
+      "name": name.text,
       'price': price.text,
-      'discount': discount.text,
+      'discount': discount.text
     }).then((value) {
-      print("Prodect Added");
-      Navigator.pushReplacementNamed(context, "home");
-    }).catchError((error) => print("Failed to add prodect: $error"));
+      print("User Updated");
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => Home()));
+    }).catchError((error) => print("Failed to update user: $error"));
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    name.text = widget.oldname;
+    price.text = widget.oldprice;
+    discount.text = widget.olddiscount;
   }
 
   @override
@@ -147,7 +167,7 @@ class _ShoppingState extends State<Shopping> {
               ),
               GestureDetector(
                 onTap: () {
-                  addprodect();
+                  Aditprodect();
                 },
                 child: Container(
                   alignment: Alignment.center,
@@ -157,7 +177,7 @@ class _ShoppingState extends State<Shopping> {
                       borderRadius: BorderRadius.circular(12),
                       color: Colors.black),
                   child: const Text(
-                    'add',
+                    'Save',
                     style: TextStyle(
                         color: Color(0xffFFFFFF),
                         fontWeight: FontWeight.w700,

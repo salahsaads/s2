@@ -1,5 +1,6 @@
 // ignore_for_file: sort_child_properties_last
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:s2/model.dart';
@@ -44,7 +45,8 @@ class _SettingsState extends State<Settings> {
                 ),
                 CircleAvatar(
                   radius: 75,
-                  backgroundImage: const AssetImage('asset/msg1261364176-35284.jpg'),
+                  backgroundImage:
+                      const AssetImage('asset/msg1261364176-35284.jpg'),
                   child: Align(
                     alignment: Alignment.bottomRight,
                     child: CircleAvatar(
@@ -115,17 +117,14 @@ class _SettingsState extends State<Settings> {
                       height: 25,
                     ),
                     TextField(
-                      
                       decoration: InputDecoration(
                           enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: colors.p1)),
                           focusedBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: colors.p1)),
                           hintText: 'Local Stores',
-                          
                           hintStyle: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w400)),
-                              
                     ),
                     const SizedBox(
                       height: 25,
@@ -140,6 +139,32 @@ class _SettingsState extends State<Settings> {
                           hintStyle: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w400)),
                     ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    GestureDetector(
+                      onTap: () async{
+                        await FirebaseAuth.instance.signOut();
+                   print("تم تسجيل الخروج");
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil('sing_in', (route) => false);
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 364,
+                        height: 64,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: colors.p1),
+                        child: const Text(
+                          'Sign out',
+                          style: TextStyle(
+                              color: Color(0xffFFFFFF),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16),
+                        ),
+                      ),
+                    ),
                   ]),
                 )
               ],
@@ -151,7 +176,7 @@ class _SettingsState extends State<Settings> {
               color: Colors.white,
               borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(25), topRight: Radius.circular(25))),
-        )
+        ),
       ]),
     );
   }

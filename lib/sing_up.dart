@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:s2/model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Sing_Up extends StatefulWidget {
   const Sing_Up({super.key});
@@ -12,6 +13,9 @@ class Sing_Up extends StatefulWidget {
 }
 
 class _HomeState extends State<Sing_Up> {
+  TextEditingController username = TextEditingController();
+  TextEditingController email = TextEditingController();
+  TextEditingController password = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,8 +29,7 @@ class _HomeState extends State<Sing_Up> {
                 Padding(
                   padding: const EdgeInsets.only(left: 20, top: 30),
                   child: GestureDetector(
-                    onTap: 
-                    () {
+                    onTap: () {
                       Navigator.pop(context);
                     },
                     child: const Icon(
@@ -68,6 +71,7 @@ class _HomeState extends State<Sing_Up> {
                 Padding(
                   padding: const EdgeInsets.only(left: 32, right: 32, top: 100),
                   child: TextField(
+                    controller: username,
                     decoration: InputDecoration(
                         enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: colors.p1)),
@@ -80,6 +84,7 @@ class _HomeState extends State<Sing_Up> {
                 Padding(
                   padding: const EdgeInsets.only(left: 32, right: 32, top: 20),
                   child: TextField(
+                    controller: email,
                     decoration: InputDecoration(
                         enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: colors.p1)),
@@ -92,6 +97,7 @@ class _HomeState extends State<Sing_Up> {
                 Padding(
                   padding: const EdgeInsets.only(left: 32, right: 32, top: 20),
                   child: TextField(
+                    controller: password,
                     decoration: InputDecoration(
                         enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: colors.p1)),
@@ -116,8 +122,23 @@ class _HomeState extends State<Sing_Up> {
                 Padding(
                   padding: const EdgeInsets.only(top: 100),
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, "verify");
+                    onTap: () async {
+                      try {
+                        final credential = await FirebaseAuth.instance
+                            .createUserWithEmailAndPassword(
+                          email: email.text,
+                          password: password.text,
+                        );
+                        Navigator.pushNamed(context, "home");
+                      } on FirebaseAuthException catch (e) {
+                        if (e.code == 'weak-password') {
+                          print('The password provided is too weak.');
+                        } else if (e.code == 'email-already-in-use') {
+                          print('The account already exists for that email.');
+                        }
+                      } catch (e) {
+                        print(e);
+                      }
                     },
                     child: Container(
                       alignment: Alignment.center,

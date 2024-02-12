@@ -1,8 +1,11 @@
 // ignore_for_file: sort_child_properties_last
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:s2/model.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class Sing_In extends StatefulWidget {
   const Sing_In({super.key});
@@ -13,6 +16,9 @@ class Sing_In extends StatefulWidget {
 
 class _HomeState extends State<Sing_In> {
   bool? isChecked = true;
+  TextEditingController username = TextEditingController();
+  TextEditingController email = TextEditingController();
+  TextEditingController password = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,18 +74,20 @@ class _HomeState extends State<Sing_In> {
                 Padding(
                   padding: const EdgeInsets.only(left: 32, right: 32, top: 100),
                   child: TextField(
+                    controller: email,
                     decoration: InputDecoration(
                         enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: colors.p1)),
                         focusedBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: colors.p1)),
-                        hintText: 'Username',
+                        hintText: 'Email',
                         hintStyle: const TextStyle(color: Color(0xffBDBDBD))),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 32, right: 32, top: 20),
                   child: TextField(
+                    controller: password,
                     decoration: InputDecoration(
                         enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: colors.p1)),
@@ -123,8 +131,34 @@ class _HomeState extends State<Sing_In> {
                 Padding(
                   padding: const EdgeInsets.only(top: 100),
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, 'home');
+                    onTap: () async {
+                      try {
+                        final credential = await FirebaseAuth.instance
+                            .signInWithEmailAndPassword(
+                                email: email.text, password: password.text);
+                        Navigator.pushNamed(context, 'home');
+                      } on FirebaseAuthException catch (e) {
+                        if (e.code == 'user-not-found') {
+                          // ignore: use_build_context_synchronously
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.error,
+                            animType: AnimType.bottomSlide,
+                            title: 'INFO Reversed',
+                            desc: 'No user found for that email.',
+                          ).show();
+                        } else if (e.code == 'wrong-password') {
+                          // ignore: use_build_context_synchronously
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.error,
+                            animType: AnimType.bottomSlide,
+                            title: 'INFO Reversed',
+                            desc: 'Wrong password provided for that user.',
+                          ).show();
+                          print('Wrong password provided for that user.');
+                        }
+                      }
                     },
                     child: Container(
                       alignment: Alignment.center,
@@ -169,25 +203,48 @@ class _HomeState extends State<Sing_In> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: 364,
-                    height: 64,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.black),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset('asset/Vector (1).png'),
-                        const Text(
-                          '   Continue with Google',
-                          style: TextStyle(
-                              color: Color(0xffFFFFFF),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16),
-                        ),
-                      ],
+                  child: GestureDetector(
+                    onTap: () {
+                      Future<UserCredential> signInWithGoogle() async {
+                        // Trigger the authentication flow
+                        final GoogleSignInAccount? googleUser =
+                            await GoogleSignIn().signIn();
+
+                        // Obtain the auth details from the request
+                        final GoogleSignInAuthentication? googleAuth =
+                            await googleUser?.authentication;
+
+                        // Create a new credential
+                        final credential = GoogleAuthProvider.credential(
+                          accessToken: googleAuth?.accessToken,
+                          idToken: googleAuth?.idToken,
+                        );
+
+                        // Once signed in, return the UserCredential
+                        return await FirebaseAuth.instance
+                            .signInWithCredential(credential);
+                      }
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 364,
+                      height: 64,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.black),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset('asset/Vector (1).png'),
+                          const Text(
+                            '   Continue with Google',
+                            style: TextStyle(
+                                color: Color(0xffFFFFFF),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
